@@ -6,7 +6,7 @@ on:
   workflow_dispatch: # on button click
   push:
     branches:
-      - master
+      - main
     paths:
       - '.github/workflows/sync_changes.yml'
       - 'Dockerfile'
