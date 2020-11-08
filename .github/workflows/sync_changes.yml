@@ -20,6 +20,7 @@ jobs:
     outputs:
       has_new_commits: ${{ steps.sync.outputs.has_new_commits }}
       current_commit: ${{ steps.current_commit.outputs.current_commit }}
+      bot_api_ver: ${{ steps.bot_api_ver.outputs.api_version }}
     steps:
     - uses: actions/checkout@v2
       with:
@@ -36,6 +37,9 @@ jobs:
     - name: Set the variable for current commit
       id: current_commit
       run: echo "::set-output name=current_commit::$(git rev-parse HEAD)"
+    - name: Get the Bot API version
+      id: bot_api_ver
+      run: echo "::set-output name=api_version::$(grep -oP '(?<=parameters->application_version_ = ")([^;]*)(?=";)' telegram-bot-api/Client.cpp)"
   build:
     runs-on: ubuntu-latest
     needs: check_for_changes
@@ -56,6 +60,7 @@ jobs:
           registry: ghcr.io
           buildoptions: "--target=exec-env"
           buildargs: CHECKOUT_REF
+          tags: "latest,${{ needs.check_for_changes.outputs.bot_api_ver }}"
   deployment:
     name: Deploy docker image
     needs: build
