@@ -47,7 +47,8 @@ jobs:
           fetch-depth: 1
       - name: Publish to Registry
         uses: elgohr/Publish-Docker-Github-Action@master
-        env: CHECKOUT_REF="${{ needs.check_for_changes.outputs.current_commit }}"
+        env: 
+          CHECKOUT_REF: "${{ needs.check_for_changes.outputs.current_commit }}"
         with:
           name: octo-tg-bot/tgbotapi
           username: ${{ github.repository_owner }}
