@@ -19,7 +19,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       has_new_commits: ${{ steps.sync.outputs.has_new_commits }}
-      current_commit: ${{ steps.current_commit.current_commit }}
+      current_commit: ${{ steps.current_commit.outputs.current_commit }}
     steps:
     - uses: actions/checkout@v2
       with:
