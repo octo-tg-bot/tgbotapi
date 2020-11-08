@@ -43,9 +43,8 @@ jobs:
     steps:
       - uses: actions/checkout@v2
         with:
-          ref: master
-          submodules: true
-          fetch-depth: 0
+          ref: main
+          fetch-depth: 1
       - name: Publish to Registry
         uses: elgohr/Publish-Docker-Github-Action@master
         env:
