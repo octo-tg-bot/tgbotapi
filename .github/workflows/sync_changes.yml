@@ -38,8 +38,8 @@ jobs:
       run: echo "::set-output name=current_commit::$(git rev-parse HEAD)"
   build:
     runs-on: ubuntu-latest
-    needs: sync_fork
-    if: ${{ needs.sync_fork.outputs.has_new_commits == 'true' || github.event_name == 'push'}}
+    needs: check_for_changes
+    if: ${{ needs.check_for_changes.outputs.has_new_commits == 'true' || github.event_name == 'push'}}
     steps:
       - uses: actions/checkout@v2
         with:
@@ -48,12 +48,15 @@ jobs:
           fetch-depth: 0
       - name: Publish to Registry
         uses: elgohr/Publish-Docker-Github-Action@master
+        env:
+          CHECKOUT_REF=${{ needs.current_commit.outputs.current_commit }}
         with:
           name: octo-tg-bot/tgbotapi
           username: ${{ github.repository_owner }}
           password: ${{ secrets.USER_GH_TOKEN }}
           registry: ghcr.io
           buildoptions: "--target=exec-env"
+          buildargs: CHECKOUT_REF
   deployment:
     name: Deploy docker image
     needs: build
