@@ -12,6 +12,7 @@ on:
       - 'Dockerfile'
       - 'nginx.conf'
       - 'start_api.sh'
+      - 'patches/*'
 
 
 jobs:
@@ -53,6 +54,7 @@ jobs:
         uses: elgohr/Publish-Docker-Github-Action@master
         env: 
           CHECKOUT_REF: "${{ needs.check_for_changes.outputs.current_commit }}"
+          DOCKER_BUILDKIT: 1
         with:
           name: octo-tg-bot/tgbotapi
           username: ${{ github.repository_owner }}
