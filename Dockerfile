@@ -10,8 +10,8 @@ RUN git init && \
     git fetch upstream ${CHECKOUT_REF} && \
     git reset --hard FETCH_HEAD && \
     git submodule init && git submodule update
-COPY patches patches
-RUN git apply --ignore-whitespace patches/*.patch
+# COPY patches patches
+# RUN git apply --ignore-whitespace patches/*.patch
 RUN --mount=type=cache,target=/ccache/ ccache -s
 RUN --mount=type=cache,target=/ccache/ rm -rf build && mkdir -p build && cd build && \ 
     export CXXFLAGS="" && cmake -DCMAKE_BUILD_TYPE=Release .. -DCMAKE_INSTALL_PREFIX:PATH=.. .. && \
