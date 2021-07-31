@@ -60,3 +60,4 @@ jobs:
                   buildoptions: "--target=exec-env"
                   buildargs: CHECKOUT_REF
                   tags: "latest,${{ needs.check_for_changes.outputs.bot_api_ver }}"
+                  cache: ${{ github.event_name != 'schedule' }}
