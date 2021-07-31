@@ -1,90 +1,68 @@
 name: Check for changes and build
 
 on:
-  schedule:
-    - cron: '*/30 * * * *' # every 30 minutes
-  workflow_dispatch: # on button click
-  push:
-    branches:
-      - main
-    paths:
-      - '.github/workflows/sync_changes.yml'
-      - 'Dockerfile'
-      - 'nginx.conf'
-      - 'start_api.sh'
-      - 'patches/*'
-
+    schedule:
+        - cron: "*/30 * * * *" # every 30 minutes
+    workflow_dispatch: # on button click
+    push:
+        branches:
+            - main
+        paths:
+            - ".github/workflows/sync_changes.yml"
+            - "Dockerfile"
+            - "nginx.conf"
+            - "start_api.sh"
+            - "patches/*"
 
 jobs:
-  check_for_changes:
-    runs-on: ubuntu-latest
-    outputs:
-      has_new_commits: ${{ steps.sync.outputs.has_new_commits }}
-      current_commit: ${{ steps.current_commit.outputs.current_commit }}
-      bot_api_ver: ${{ steps.bot_api_ver.outputs.api_version }}
-    steps:
-    - uses: actions/checkout@v2
-      with:
-        ref: upstream
-        submodules: 'recursive'
-    - uses: aormsby/Fork-Sync-With-Upstream-action@v2.0
-      id: sync
-      with:
-        upstream_repository: "tdlib/telegram-bot-api"
-        upstream_branch: "master"   # Upstream Branch to use
-        target_branch: "upstream"   # Local Branch
-        git_pull_args: "--rebase"
-        github_token: ${{ secrets.GITHUB_TOKEN }}
-    - name: Set the variable for current commit
-      id: current_commit
-      run: echo "::set-output name=current_commit::$(git rev-parse HEAD)"
-    - name: Get the Bot API version
-      id: bot_api_ver
-      run: echo "::set-output name=api_version::$(grep -oP '(?<=parameters->application_version_ = ")([^;]*)(?=";)' telegram-bot-api/Client.cpp)"
-  build:
-    runs-on: ubuntu-latest
-    needs: check_for_changes
-    if: ${{ needs.check_for_changes.outputs.has_new_commits == 'true' || github.event_name == 'push'}}
-    steps:
-      - uses: actions/checkout@v2
-        with:
-          ref: main
-          fetch-depth: 1
-      - name: Publish to Registry
-        uses: elgohr/Publish-Docker-Github-Action@master
-        env: 
-          CHECKOUT_REF: "${{ needs.check_for_changes.outputs.current_commit }}"
-          DOCKER_BUILDKIT: 1
-        with:
-          name: octo-tg-bot/tgbotapi
-          username: ${{ github.repository_owner }}
-          password: ${{ secrets.USER_GH_TOKEN }}
-          registry: ghcr.io
-          buildoptions: "--target=exec-env"
-          buildargs: CHECKOUT_REF
-          tags: "latest,${{ needs.check_for_changes.outputs.bot_api_ver }}"
-  deployment:
-    name: Deploy docker image
-    needs: build
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: start deployment
-        uses: bobheadxi/deployments@master
-        id: deployment
-        with:
-          step: start
-          token: ${{ secrets.GITHUB_TOKEN }}
-          env: telegram
-
-      - name: Send request to Watchtower HTTP API
-        run: 'curl -H "Token: ${{ secrets.WT_TOKEN }}" ${{ secrets.WT_URL }}'
-
-      - name: update deployment status
-        uses: bobheadxi/deployments@master
-        if: always()
-        with:
-          step: finish
-          token: ${{ secrets.GITHUB_TOKEN }}
-          status: ${{ job.status }}
-          deployment_id: ${{ steps.deployment.outputs.deployment_id }}
+    check_for_changes:
+        runs-on: ubuntu-latest
+        outputs:
+            has_new_commits: ${{ steps.sync.outputs.has_new_commits }}
+            current_commit: ${{ steps.current_commit.outputs.current_commit }}
+            bot_api_ver: ${{ steps.bot_api_ver.outputs.api_version }}
+        steps:
+            - uses: actions/checkout@v2
+              with:
+                  ref: upstream
+                  submodules: "recursive"
+            - uses: aormsby/Fork-Sync-With-Upstream-action@v2.0
+              id: sync
+              with:
+                  upstream_repository: "tdlib/telegram-bot-api"
+                  upstream_branch: "master" # Upstream Branch to use
+                  target_branch: "upstream" # Local Branch
+                  git_pull_args: "--rebase"
+                  github_token: ${{ secrets.GITHUB_TOKEN }}
+            - name: Set the variable for current commit
+              id: current_commit
+              run: echo "::set-output name=current_commit::$(git rev-parse HEAD)"
+            - name: Get the Bot API version
+              id: bot_api_ver
+              run: echo "::set-output name=api_version::$(grep -oP '(?<=parameters->application_version_ = ")([^;]*)(?=";)' telegram-bot-api/Client.cpp)"
+    build:
+        runs-on: ubuntu-latest
+        needs: check_for_changes
+        if: ${{ needs.check_for_changes.outputs.has_new_commits == 'true' || github.event_name == 'push'}}
+        steps:
+            - uses: actions/checkout@v2
+              with:
+                  ref: main
+                  fetch-depth: 1
+            - name: Publish to Registry
+              uses: elgohr/Publish-Docker-Github-Action@master
+              env:
+                  CHECKOUT_REF: "${{ needs.check_for_changes.outputs.current_commit }}"
+                  DOCKER_BUILDKIT: 1
+              with:
+                  name: octo-tg-bot/tgbotapi
+                  username: ${{ github.repository_owner }}
+                  password: ${{ secrets.USER_GH_TOKEN }}
+                  registry: ghcr.io
+                  buildoptions: "--target=exec-env"
+                  buildargs: CHECKOUT_REF
+                  tags: "latest,${{ needs.check_for_changes.outputs.bot_api_ver }}"
+    deployment:
+        name: Deploy docker image
+        needs: build
+        runs-on: ubuntu-latest
