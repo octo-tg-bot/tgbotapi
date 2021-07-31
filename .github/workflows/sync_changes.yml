@@ -10,9 +10,6 @@ on:
         paths:
             - ".github/workflows/sync_changes.yml"
             - "Dockerfile"
-            - "nginx.conf"
-            - "start_api.sh"
-            - "patches/*"
 
 jobs:
     check_for_changes:

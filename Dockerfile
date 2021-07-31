@@ -16,7 +16,7 @@ RUN --mount=type=cache,target=/ccache/ rm -rf build && mkdir -p build && cd buil
     echo building with $(nproc) cores && cmake --build . -j $(nproc) --target install
 RUN --mount=type=cache,target=/ccache/ ccache -s
 
-FROM nginx:1.19-alpine AS exec-env
+FROM alpine:latest AS exec-env
 WORKDIR /app
 RUN apk add --no-cache openssl zlib libstdc++
 COPY --from=build-env /src/bin/telegram-bot-api .
