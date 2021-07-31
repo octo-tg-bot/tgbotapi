@@ -59,7 +59,3 @@ jobs:
                   buildoptions: "--target=exec-env"
                   buildargs: CHECKOUT_REF
                   tags: "latest,${{ needs.check_for_changes.outputs.bot_api_ver }}"
-    deployment:
-        name: Deploy docker image
-        needs: build
-        runs-on: ubuntu-latest
