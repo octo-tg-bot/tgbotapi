@@ -23,4 +23,4 @@ COPY --from=build-env /src/bin/telegram-bot-api .
 RUN mkdir /file && chmod ugo+rw /file -R
 COPY startapi.sh /app/
 RUN chmod +x startapi.sh
-ENTRYPOINT /app/startapi.sh
+ENTRYPOINT ["sh", "startapi.sh"]
