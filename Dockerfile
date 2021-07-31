@@ -21,4 +21,6 @@ WORKDIR /app
 RUN apk add --no-cache openssl zlib libstdc++
 COPY --from=build-env /src/bin/telegram-bot-api .
 RUN mkdir /file && chmod ugo+rw /file -R
-ENTRYPOINT /app/telegram-bot-api --local --http-port=80 --temp-dir=/tmp/tgbot --dir=/file --username=botapi
+COPY startapi.sh /app/
+RUN chmod +x startapi.sh
+ENTRYPOINT startapi.sh
